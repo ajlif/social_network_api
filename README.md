@@ -3,7 +3,7 @@
 ## Technologies 
 * Node.js 12.12.0 
 * Express 4.17.1
-* Mongoose 5.7.4
+* Mongoose 5.7.13
 * JWT 8.5.1
 
 ## Setup 
