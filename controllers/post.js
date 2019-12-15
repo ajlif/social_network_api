@@ -4,16 +4,11 @@ const fs = require('fs') ; // file system in core node js module
 const _ = require('lodash'); // _ is a convention. lodash (used to update post data
 
 
-
-
+// getPosts without pagination
+/* 
 exports.getPosts = (req, res) => {
 	//res.send('hello from node  ppost');
 
-	//return json format to understand
-	/*res.json({
-		posts:[{title : "first post"}, {title : "second post"}]
-
-	});*/
 
 	const posts = Post.find()    // or find().select("_id title body")
 	// use populate because postedBy type is ObjectId which reffer to a different model , otherwise we use select
@@ -30,6 +25,37 @@ exports.getPosts = (req, res) => {
 		.catch( err => console.log(err))
 
 };
+
+*/
+
+// getPosts with pagination
+exports.getPosts = async (req, res) => {
+	// get current page from req.query or use default value of 1
+	const currentPage = req.query.page || 1;
+	// return 3 posts per page
+	const perPage = 3;
+	let totalItems;
+ 
+	const posts = await Post.find()
+		// countDocuments() gives the total count of posts
+		.countDocuments()
+		.then(count => {
+			totalItems = count;
+			return Post.find()
+				.skip((currentPage - 1) * perPage)
+				.populate("comments", "text created")
+				.populate("comments.postedBy", "_id name")
+				.populate("postedBy", "_id name")
+				.sort({ date: -1 })
+				.limit(perPage)
+				.select("_id title body likes");
+		})
+		.then(posts => {
+			res.status(200).json(posts);
+		})
+		.catch(err => console.log(err));
+};
+
 
 exports.postById = (req, res, next, id) => {
 	Post.findById(id)
