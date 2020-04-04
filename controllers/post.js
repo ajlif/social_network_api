@@ -59,20 +59,24 @@ exports.getPosts = async (req, res) => {
 
 exports.postById = (req, res, next, id) => {
 	Post.findById(id)
-		.populate('postedBy', '_id name')
-		.populate("comments", "text created")
-		.populate("comments.postedBy", "_id name")
-		.exec((err, post) => {
-			if (err || !post) {
-				return res.status(400).json({
-					error: err
-				});
-			}
-			req.post = post;
-			next();
-		});
-};
-
+	  .populate("postedBy", "_id name")
+	  .populate("comments.postedBy", "_id name")
+	  .populate("postedBy", "_id name role")
+	  .select("_id title body created likes comments photo")
+	  .exec((err, post) => {
+		if (err || !post) {
+		  return res.status(400).json({
+			error: err
+		  });
+		}
+		req.post = post;
+		next();
+	  });
+  };
+   
+  exports.singlePost = (req, res) => {
+	return res.json(req.post);
+  };
 // req.body will be sent from front end
 // be sure to add another route to create post
 //used body-parser to parse req.body because in express data were not parsed
